@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Encoder/Decoder Completo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        select, input[type="text"], input[type="password"], textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-family: monospace;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .split-view {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            font-size: 0.8em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        input[type="text"].table-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .token-parts {
+            display: grid;
+            gap: 15px;
+        }
+
+        .token-part {
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .token-part.header {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .token-part.payload {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .token-part.signature {
+            background: #fecaca;
+            border-color: #ef4444;
+        }
+
+        .token-part-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1em;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 JWT Encoder/Decoder</h1>
+            <p>Ferramenta completa para codificar, decodificar e editar JSON Web Tokens</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Tabs -->
+            <div class="tab-container">
+                <button class="tab active" onclick="switchTab('decode')">Decodificar JWT</button>
+                <button class="tab" onclick="switchTab('encode')">Criar JWT</button>
+            </div>
+
+            <!-- Decode Tab -->
+            <div id="decode-tab" class="tab-content active">
+                <div class="section">
+                    <div class="section-title">📥 Token JWT</div>
+                    <div class="control-group">
+                        <label>Cole seu token JWT aqui:</label>
+                        <textarea id="jwtInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn-primary" onclick="decodeJWT()">🔓 Decodificar</button>
+                        <button class="btn-secondary" onclick="clearDecode()">🗑️ Limpar</button>
+                        <button class="btn-secondary" onclick="loadExample()">📝 Carregar Exemplo</button>
+                    </div>
+                </div>
+
+                <div id="decodeResult" style="display: none;">
+                    <div class="section">
+                        <div class="section-title">🔍 Partes do Token</div>
+                        <div class="token-parts">
+                            <div class="token-part header">
+                                <div class="token-part-title">Header (Cabeçalho)</div>
+                                <div class="code-block">
+                                    <button class="copy-btn btn-secondary" onclick="copyToClipboard('headerDecoded')">📋 Copiar</button>
+                                    <pre id="headerDecoded"></pre>
+                                </div>
+                            </div>
+                            <div class="token-part payload">
+                                <div class="token-part-title">Payload (Dados)</div>
+                                <div class="code-block">
+                                    <button class="copy-btn btn-secondary" onclick="copyToClipboard('payloadDecoded')">📋 Copiar</button>
+                                    <pre id="payloadDecoded"></pre>
+                                </div>
+                            </div>
+                            <div class="token-part signature">
+                                <div class="token-part-title">Signature (Assinatura)</div>
+                                <div class="code-block">
+                                    <button class="copy-btn btn-secondary" onclick="copyToClipboard('signatureDecoded')">📋 Copiar</button>
+                                    <pre id="signatureDecoded"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">✏️ Editar Payload</div>
+                        <div id="payloadTableContainer"></div>
+                        <div class="btn-group" style="margin-top: 15px;">
+                            <button class="btn-success" onclick="addPayloadField()">➕ Adicionar Campo</button>
+                            <button class="btn-primary" onclick="applyChanges()">💾 Aplicar Alterações e Gerar Novo Token</button>
+                        </div>
+                    </div>
+
+                    <div class="section" id="newTokenSection" style="display: none;">
+                        <div class="section-title">✅ Novo Token Gerado</div>
+                        <div class="control-group">
+                            <textarea id="newTokenOutput" readonly style="background: #f9f9f9;"></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="copyToClipboard('newTokenOutput')">📋 Copiar Token</button>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">🔐 Verificar Assinatura</div>
+                        <div class="controls">
+                            <div class="control-group">
+                                <label>Algoritmo:</label>
+                                <select id="verifyAlgorithm">
+                                    <option value="HS256">HS256 (HMAC SHA-256)</option>
+                                    <option value="HS384">HS384 (HMAC SHA-384)</option>
+                                    <option value="HS512">HS512 (HMAC SHA-512)</option>
+                                    <option value="RS256">RS256 (RSA SHA-256)</option>
+                                    <option value="RS384">RS384 (RSA SHA-384)</option>
+                                    <option value="RS512">RS512 (RSA SHA-512)</option>
+                                    <option value="ES256">ES256 (ECDSA SHA-256)</option>
+                                    <option value="ES384">ES384 (ECDSA SHA-384)</option>
+                                    <option value="ES512">ES512 (ECDSA SHA-512)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>Senha/Chave Secreta:</label>
+                                <input type="password" id="verifySecret" placeholder="Digite a chave secreta">
+                            </div>
+                        </div>
+                        <button class="btn-primary" onclick="verifySignature()">✓ Verificar</button>
+                        <div id="verifyResult"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Encode Tab -->
+            <div id="encode-tab" class="tab-content">
+                <div class="section">
+                    <div class="section-title">⚙️ Configurações</div>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Algoritmo:</label>
+                            <select id="encodeAlgorithm">
+                                <option value="HS256">HS256 (HMAC SHA-256)</option>
+                                <option value="HS384">HS384 (HMAC SHA-384)</option>
+                                <option value="HS512">HS512 (HMAC SHA-512)</option>
+                                <option value="RS256">RS256 (RSA SHA-256)</option>
+                                <option value="RS384">RS384 (RSA SHA-384)</option>
+                                <option value="RS512">RS512 (RSA SHA-512)</option>
+                                <option value="ES256">ES256 (ECDSA SHA-256)</option>
+                                <option value="ES384">ES384 (ECDSA SHA-384)</option>
+                                <option value="ES512">ES512 (ECDSA SHA-512)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="useSecret" checked onchange="toggleSecret()">
+                                <label for="useSecret">Usar senha/chave secreta</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-group" id="secretGroup">
+                        <label>Senha/Chave Secreta:</label>
+                        <input type="password" id="encodeSecret" placeholder="Digite a chave secreta" value="sua-chave-secreta-256-bits">
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">📝 Payload (Dados)</div>
+                    <div id="encodePayloadTableContainer"></div>
+                    <div class="btn-group" style="margin-top: 15px;">
+                        <button class="btn-success" onclick="addEncodeField()">➕ Adicionar Campo</button>
+                        <button class="btn-secondary" onclick="loadStandardClaims()">📋 Carregar Claims Padrão</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="btn-group">
+                        <button class="btn-primary" onclick="generateJWT()">🔒 Gerar JWT</button>
+                        <button class="btn-secondary" onclick="clearEncode()">🗑️ Limpar Tudo</button>
+                    </div>
+                </div>
+
+                <div class="section" id="generatedTokenSection" style="display: none;">
+                    <div class="section-title">✅ Token JWT Gerado</div>
+                    <div class="control-group">
+                        <textarea id="generatedToken" readonly style="background: #f9f9f9;"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn-primary" onclick="copyToClipboard('generatedToken')">📋 Copiar Token</button>
+                        <button class="btn-secondary" onclick="switchToDecodeTab()">🔍 Decodificar Este Token</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        // State
+        let currentHeader = {};
+        let currentPayload = {};
+        let currentSignature = '';
+        let encodePayloadData = {};
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'decode') {
+                document.querySelector('[onclick="switchTab(\'decode\')"]').classList.add('active');
+                document.getElementById('decode-tab').classList.add('active');
+            } else {
+                document.querySelector('[onclick="switchTab(\'encode\')"]').classList.add('active');
+                document.getElementById('encode-tab').classList.add('active');
+            }
+        }
+
+        function switchToDecodeTab() {
+            const token = document.getElementById('generatedToken').value;
+            document.getElementById('jwtInput').value = token;
+            switchTab('decode');
+            decodeJWT();
+        }
+
+        // Base64 URL encoding/decoding
+        function base64UrlEncode(str) {
+            return btoa(str)
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+        }
+
+        function base64UrlDecode(str) {
+            str = str.replace(/-/g, '+').replace(/_/g, '/');
+            while (str.length % 4) {
+                str += '=';
+            }
+            return atob(str);
+        }
+
+        // Decode JWT
+        function decodeJWT() {
+            const token = document.getElementById('jwtInput').value.trim();
+            
+            if (!token) {
+                showAlert('Por favor, insira um token JWT', 'error');
+                return;
+            }
+
+            try {
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Token JWT inválido. Deve conter 3 partes separadas por ponto.');
+                }
+
+                // Decode header
+                currentHeader = JSON.parse(base64UrlDecode(parts[0]));
+                document.getElementById('headerDecoded').textContent = JSON.stringify(currentHeader, null, 2);
+
+                // Decode payload
+                currentPayload = JSON.parse(base64UrlDecode(parts[1]));
+                document.getElementById('payloadDecoded').textContent = JSON.stringify(currentPayload, null, 2);
+
+                // Signature
+                currentSignature = parts[2];
+                document.getElementById('signatureDecoded').textContent = currentSignature;
+
+                // Show result
+                document.getElementById('decodeResult').style.display = 'block';
+                
+                // Build editable table
+                buildPayloadTable();
+
+                // Set algorithm in verify section
+                if (currentHeader.alg) {
+                    document.getElementById('verifyAlgorithm').value = currentHeader.alg;
+                }
+
+                showAlert('Token decodificado com sucesso!', 'success');
+            } catch (error) {
+                showAlert('Erro ao decodificar token: ' + error.message, 'error');
+                document.getElementById('decodeResult').style.display = 'none';
+            }
+        }
+
+        function buildPayloadTable() {
+            const container = document.getElementById('payloadTableContainer');
+            let html = '<table><thead><tr><th>Campo</th><th>Valor</th><th>Tipo</th><th>Ação</th></tr></thead><tbody>';
+            
+            for (const [key, value] of Object.entries(currentPayload)) {
+                const type = typeof value;
+                const displayValue = type === 'object' ? JSON.stringify(value) : value;
+                html += `
+                    <tr data-key="${key}">
+                        <td><input type="text" class="table-input" value="${key}" onchange="updatePayloadKey(this, '${key}')"></td>
+                        <td><input type="text" class="table-input" value="${displayValue}" onchange="updatePayloadValue(this, '${key}')"></td>
+                        <td>${type}</td>
+                        <td><button class="btn-danger" style="padding: 6px 12px; font-size: 0.85em;" onclick="deletePayloadField('${key}')">🗑️</button></td>
+                    </tr>
+                `;
+            }
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function updatePayloadKey(input, oldKey) {
+            const newKey = input.value;
+            if (newKey !== oldKey && newKey) {
+                currentPayload[newKey] = currentPayload[oldKey];
+                delete currentPayload[oldKey];
+                input.closest('tr').dataset.key = newKey;
+            }
+        }
+
+        function updatePayloadValue(input, key) {
+            let value = input.value;
+            
+            // Try to parse as JSON
+            try {
+                value = JSON.parse(value);
+            } catch (e) {
+                // Try to parse as number
+                if (!isNaN(value) && value !== '') {
+                    value = Number(value);
+                }
+            }
+            
+            currentPayload[key] = value;
+        }
+
+        function deletePayloadField(key) {
+            delete currentPayload[key];
+            buildPayloadTable();
+        }
+
+        function addPayloadField() {
+            const newKey = prompt('Nome do novo campo:');
+            if (newKey) {
+                currentPayload[newKey] = '';
+                buildPayloadTable();
+            }
+        }
+
+        function applyChanges() {
+            try {
+                const algorithm = currentHeader.alg || 'HS256';
+                const secret = prompt('Digite a chave secreta para assinar o novo token:');
+                
+                if (!secret) {
+                    showAlert('Chave secreta é necessária para gerar o token', 'error');
+                    return;
+                }
+
+                const newToken = createJWT(currentHeader, currentPayload, secret);
+                document.getElementById('newTokenOutput').value = newToken;
+                document.getElementById('newTokenSection').style.display = 'block';
+                showAlert('Novo token gerado com sucesso!', 'success');
+                
+                // Update current JWT input
+                document.getElementById('jwtInput').value = newToken;
+            } catch (error) {
+                showAlert('Erro ao gerar novo token: ' + error.message, 'error');
+            }
+        }
+
+        function createJWT(header, payload, secret) {
+            const headerEncoded = base64UrlEncode(JSON.stringify(header));
+            const payloadEncoded = base64UrlEncode(JSON.stringify(payload));
+            const data = `${headerEncoded}.${payloadEncoded}`;
+            
+            let signature;
+            const algorithm = header.alg || 'HS256';
+            
+            if (algorithm.startsWith('HS')) {
+                signature = signHMAC(data, secret, algorithm);
+            } else {
+                showAlert('Algoritmo ' + algorithm + ' requer implementação adicional. Usando HS256.', 'info');
+                header.alg = 'HS256';
+                signature = signHMAC(data, secret, 'HS256');
+            }
+            
+            return `${data}.${signature}`;
+        }
+
+        function signHMAC(data, secret, algorithm) {
+            let hash;
+            switch (algorithm) {
+                case 'HS256':
+                    hash = CryptoJS.HmacSHA256(data, secret);
+                    break;
+                case 'HS384':
+                    hash = CryptoJS.HmacSHA384(data, secret);
+                    break;
+                case 'HS512':
+                    hash = CryptoJS.HmacSHA512(data, secret);
+                    break;
+                default:
+                    hash = CryptoJS.HmacSHA256(data, secret);
+            }
+            return base64UrlEncode(CryptoJS.enc.Base64.stringify(hash));
+        }
+
+        function verifySignature() {
+            const token = document.getElementById('jwtInput').value.trim();
+            const secret = document.getElementById('verifySecret').value;
+            const algorithm = document.getElementById('verifyAlgorithm').value;
+            
+            if (!secret) {
+                showAlert('Por favor, insira a chave secreta', 'error');
+                return;
+            }
+
+            try {
+                const parts = token.split('.');
+                const data = `${parts[0]}.${parts[1]}`;
+                const providedSignature = parts[2];
+                
+                let calculatedSignature;
+                if (algorithm.startsWith('HS')) {
+                    calculatedSignature = signHMAC(data, secret, algorithm);
+                } else {
+                    document.getElementById('verifyResult').innerHTML = 
+                        '<div class="alert alert-info" style="margin-top: 15px;">Verificação de algoritmos RSA/ECDSA requer chaves públicas/privadas. Use HMAC para teste.</div>';
+                    return;
+                }
+                
+                const isValid = calculatedSignature === providedSignature;
+                
+                const resultHtml = isValid 
+                    ? '<div class="alert alert-success" style="margin-top: 15px;">✅ <strong>Assinatura Válida!</strong> O token foi assinado com a chave fornecida.</div>'
+                    : '<div class="alert alert-error" style="margin-top: 15px;">❌ <strong>Assinatura Inválida!</strong> O token não corresponde à chave fornecida.</div>';
+                
+                document.getElementById('verifyResult').innerHTML = resultHtml;
+            } catch (error) {
+                showAlert('Erro ao verificar assinatura: ' + error.message, 'error');
+            }
+        }
+
+        // Encode functions
+        function buildEncodeTable() {
+            const container = document.getElementById('encodePayloadTableContainer');
+            let html = '<table><thead><tr><th>Campo</th><th>Valor</th><th>Ação</th></tr></thead><tbody>';
+            
+            for (const [key, value] of Object.entries(encodePayloadData)) {
+                const displayValue = typeof value === 'object' ? JSON.stringify(value) : value;
+                html += `
+                    <tr data-key="${key}">
+                        <td><input type="text" class="table-input" value="${key}" onchange="updateEncodeKey(this, '${key}')"></td>
+                        <td><input type="text" class="table-input" value="${displayValue}" onchange="updateEncodeValue(this, '${key}')"></td>
+                        <td><button class="btn-danger" style="padding: 6px 12px; font-size: 0.85em;" onclick="deleteEncodeField('${key}')">🗑️</button></td>
+                    </tr>
+                `;
+            }
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function updateEncodeKey(input, oldKey) {
+            const newKey = input.value;
+            if (newKey !== oldKey && newKey) {
+                encodePayloadData[newKey] = encodePayloadData[oldKey];
+                delete encodePayloadData[oldKey];
+                input.closest('tr').dataset.key = newKey;
+            }
+        }
+
+        function updateEncodeValue(input, key) {
+            let value = input.value;
+            
+            try {
+                value = JSON.parse(value);
+            } catch (e) {
+                if (!isNaN(value) && value !== '') {
+                    value = Number(value);
+                }
+            }
+            
+            encodePayloadData[key] = value;
+        }
+
+        function deleteEncodeField(key) {
+            delete encodePayloadData[key];
+            buildEncodeTable();
+        }
+
+        function addEncodeField() {
+            const newKey = prompt('Nome do campo:');
+            if (newKey) {
+                encodePayloadData[newKey] = '';
+                buildEncodeTable();
+            }
+        }
+
+        function loadStandardClaims() {
+            encodePayloadData = {
+                'sub': '1234567890',
+                'name': 'John Doe',
+                'iat': Math.floor(Date.now() / 1000),
+                'exp': Math.floor(Date.now() / 1000) + 3600
+            };
+            buildEncodeTable();
+        }
+
+        function toggleSecret() {
+            const useSecret = document.getElementById('useSecret').checked;
+            document.getElementById('secretGroup').style.display = useSecret ? 'block' : 'none';
+        }
+
+        function generateJWT() {
+            try {
+                const algorithm = document.getElementById('encodeAlgorithm').value;
+                const useSecret = document.getElementById('useSecret').checked;
+                const secret = document.getElementById('encodeSecret').value;
+
+                if (useSecret && !secret) {
+                    showAlert('Por favor, insira uma chave secreta', 'error');
+                    return;
+                }
+
+                if (Object.keys(encodePayloadData).length === 0) {
+                    showAlert('Adicione pelo menos um campo ao payload', 'error');
+                    return;
+                }
+
+                const header = {
+                    alg: algorithm,
+                    typ: 'JWT'
+                };
+
+                const token = createJWT(header, encodePayloadData, secret || '');
+                document.getElementById('generatedToken').value = token;
+                document.getElementById('generatedTokenSection').style.display = 'block';
+                showAlert('Token JWT gerado com sucesso!', 'success');
+            } catch (error) {
+                showAlert('Erro ao gerar token: ' + error.message, 'error');
+            }
+        }
+
+        function clearEncode() {
+            encodePayloadData = {};
+            buildEncodeTable();
+            document.getElementById('generatedTokenSection').style.display = 'none';
+        }
+
+        function clearDecode() {
+            document.getElementById('jwtInput').value = '';
+            document.getElementById('decodeResult').style.display = 'none';
+            document.getElementById('newTokenSection').style.display = 'none';
+            document.getElementById('verifyResult').innerHTML = '';
+        }
+
+        function loadExample() {
+            document.getElementById('jwtInput').value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNTE2MjQyNjIyfQ.4Adcj0UnEr_L15ppYfx2F4ILzbnHdI8rMTh_sJf3W0A';
+            decodeJWT();
+        }
+
+        // Utility functions
+        function showAlert(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-error' : 'alert-info';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${alertClass}`;
+            alertDiv.textContent = message;
+            
+            const container = document.querySelector('.main-content');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            element.select();
+            document.execCommand('copy');
+            showAlert('Copiado para a área de transferência!', 'success');
+        }
+
+        // Initialize
+        loadStandardClaims();
+    </script>
+</body>
+</html>
