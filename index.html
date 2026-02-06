@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Guia Web Security</title>
+
+<style>
+body{
+    margin:0;
+    font-family: system-ui, Arial;
+    background:#0f1117;
+    color:#fff;
+}
+
+/* topo */
+header{
+    text-align:center;
+    padding:25px;
+    font-size:22px;
+    font-weight:bold;
+    background:#161b22;
+    border-bottom:1px solid #222;
+}
+
+/* grid */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:15px;
+    padding:20px;
+}
+
+/* card */
+.card{
+    background:#1a1f2b;
+    border-radius:14px;
+    padding:20px;
+    cursor:pointer;
+    transition:.2s;
+    text-decoration:none;
+    color:white;
+    border:1px solid #262b36;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+    border-color:#00ff88;
+    box-shadow:0 0 15px #00ff8840;
+}
+
+.card h3{
+    margin:0 0 8px 0;
+    font-size:18px;
+}
+
+.card p{
+    font-size:13px;
+    opacity:.8;
+}
+
+/* rodapé */
+footer{
+    text-align:center;
+    padding:15px;
+    font-size:12px;
+    opacity:.6;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+⚡ Web Security & Dev Concepts
+</header>
+
+<div class="grid">
+
+<a class="card" href="jwt.html">
+    <h3>JWT</h3>
+    <p>Autenticação por tokens completo</p>
+</a>
+
+<a class="card" href="chat-nexus.html">
+    <h3>CHAT COM IA</h3>
+    <p>Injeção de scripts no navegador da vítima</p>
+</a>
+
+<a class="card" href="sqli.html">
+    <h3>SQL Injection</h3>
+    <p>Chat com IA sem restrição - NEXUS RED OPS</p>
+</a>
+
+<a class="card" href="csrf.html">
+    <h3>CSRF</h3>
+    <p>Requisições forçadas usando sessão ativa</p>
+</a>
+
+<a class="card" href="cookies.html">
+    <h3>Cookies</h3>
+    <p>Armazenamento de sessão no navegador</p>
+</a>
+
+<a class="card" href="api.html">
+    <h3>API REST</h3>
+    <p>Comunicação cliente ↔ servidor</p>
+</a>
+
+<a class="card" href="auth.html">
+    <h3>Auth</h3>
+    <p>Login, sessões e controle de acesso</p>
+</a>
+
+<a class="card" href="crypto.html">
+    <h3>Criptografia</h3>
+    <p>Hash, AES, RSA, proteção de dados</p>
+</a>
+
+</div>
+
+<footer>
+ELVIS SEC @ 2025 a 2026
+</footer>
+
+</body>
+</html>
