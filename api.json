@@ -1,12 +1,12 @@
 {
   "apis": [
     "https://corsprxy.io/?https://play.bet.br/api/documents/validate",
-    "https://donald.bet.br/api/documents/validate",
-    "https://bateu.bet.br/api/documents/validate",
-    "https://lucky.bet.br/api/documents/validate",
-    "https://vip.bet.br/api/documents/validate",
-    "https://premium.bet.br/api/documents/validate",
-    "https://gold.bet.br/api/documents/validate",
-    "https://star.bet.br/api/documents/validate"
+    "https://corsprxy.io/?https://donald.bet.br/api/documents/validate",
+    "https://corsprxy.io/?https://bateu.bet.br/api/documents/validate",
+    "https://corsprxy.io/?https://lucky.bet.br/api/documents/validate",
+    "https://corsprxy.io/?https://vip.bet.br/api/documents/validate",
+    "https://corsprxy.io/?https://premium.bet.br/api/documents/validate",
+    "https://corsprxy.io/?https://gold.bet.br/api/documents/validate",
+    "https://corsprxy.io/?https://star.bet.br/api/documents/validate"
   ]
 }
