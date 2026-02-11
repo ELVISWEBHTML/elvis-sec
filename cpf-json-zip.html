@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversor JSON para TXT por Pessoa</title>
+
+<!-- JSZip -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<!-- SparkMD5 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-width: 500px;
+    width: 100%;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.file-input-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.file-input-wrapper input[type=file] {
+    position: absolute;
+    left: -9999px;
+}
+
+.file-input-label {
+    display: block;
+    padding: 15px;
+    background: #f0f0f0;
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.file-input-label:hover {
+    background: #e8e8e8;
+    border-color: #667eea;
+}
+
+.file-input-label.has-file {
+    background: #e8f5e9;
+    border-color: #4caf50;
+    color: #2e7d32;
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin-bottom: 20px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.progress-container {
+    margin-top: 20px;
+    display: none;
+}
+
+.progress-container.active {
+    display: block;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 30px;
+    background: #f0f0f0;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.status {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.info-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #555;
+}
+
+.info-box strong {
+    color: #333;
+}
+
+.success {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.error {
+    color: #f44336;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>📦 Conversor JSON para TXT</h1>
+    <p class="subtitle">Cada pessoa vira um arquivo: CPF.txt</p>
+
+    <div class="file-input-wrapper">
+        <input type="file" id="fileInput" accept=".json,.txt" onchange="updateFileName()">
+        <label for="fileInput" class="file-input-label" id="fileLabel">
+            📁 Selecione o arquivo JSON
+        </label>
+    </div>
+
+    <button class="btn" onclick="processar()" id="btnProcessar">
+        🚀 Gerar ZIP com TXTs
+    </button>
+
+    <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill">0%</div>
+        </div>
+        <div class="status" id="status">Aguardando...</div>
+    </div>
+
+    <div class="info-box" id="infoBox" style="display:none;">
+        <strong>ℹ️ Informações:</strong><br>
+        <span id="infoText"></span>
+    </div>
+</div>
+
+<script>
+
+function updateFileName() {
+    const input = document.getElementById('fileInput');
+    const label = document.getElementById('fileLabel');
+    
+    if (input.files.length > 0) {
+        const fileName = input.files[0].name;
+        label.textContent = `✅ ${fileName}`;
+        label.classList.add('has-file');
+    } else {
+        label.textContent = '📁 Selecione o arquivo JSON';
+        label.classList.remove('has-file');
+    }
+}
+
+function extrairPessoas(texto) {
+    const pessoas = [];
+    
+    try {
+        // Tenta fazer parse do JSON completo
+        const dados = JSON.parse(texto);
+        
+        // Se tem a estrutura com "partes"
+        if (dados.partes && Array.isArray(dados.partes)) {
+            // Itera sobre cada parte
+            for (const parte of dados.partes) {
+                // Cada parte é um array de pessoas
+                if (Array.isArray(parte)) {
+                    for (const pessoa of parte) {
+                        pessoas.push(JSON.stringify(pessoa, null, 2));
+                    }
+                } else {
+                    // Se a parte for um objeto único
+                    pessoas.push(JSON.stringify(parte, null, 2));
+                }
+            }
+        }
+        // Se for um array direto de pessoas
+        else if (Array.isArray(dados)) {
+            for (const pessoa of dados) {
+                pessoas.push(JSON.stringify(pessoa, null, 2));
+            }
+        }
+        // Se for um objeto único
+        else {
+            pessoas.push(JSON.stringify(dados, null, 2));
+        }
+        
+    } catch (e) {
+        // Se não conseguir fazer parse do JSON completo, tenta extrair objetos individuais
+        pessoas.push(...extrairObjetosManual(texto));
+    }
+    
+    return pessoas;
+}
+
+function extrairObjetosManual(texto) {
+    const objetos = [];
+    let nivelChaves = 0;
+    let objetoAtual = '';
+    let dentroString = false;
+    let caracterAnterior = '';
+
+    for (let i = 0; i < texto.length; i++) {
+        const char = texto[i];
+
+        // Detecta se estamos dentro de uma string
+        if (char === '"' && caracterAnterior !== '\\') {
+            dentroString = !dentroString;
+        }
+
+        // Só conta chaves se não estivermos dentro de string
+        if (!dentroString) {
+            if (char === '{') {
+                nivelChaves++;
+            } else if (char === '}') {
+                nivelChaves--;
+            }
+        }
+
+        // Adiciona o caractere ao objeto atual
+        if (nivelChaves > 0 || char === '{' || (char === '}' && nivelChaves === 0)) {
+            objetoAtual += char;
+        }
+
+        // Quando fechamos um objeto completo
+        if (nivelChaves === 0 && objetoAtual.trim() !== '' && char === '}') {
+            // Tenta validar se é JSON válido
+            try {
+                const obj = JSON.parse(objetoAtual.trim());
+                // Se for válido, adiciona formatado
+                objetos.push(JSON.stringify(obj, null, 2));
+            } catch (e) {
+                // Se não for JSON válido, adiciona como está
+                objetos.push(objetoAtual.trim());
+            }
+            objetoAtual = '';
+        }
+
+        caracterAnterior = char;
+    }
+
+    return objetos;
+}
+
+async function processar() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert("⚠️ Por favor, selecione um arquivo primeiro!");
+        return;
+    }
+
+    const btnProcessar = document.getElementById('btnProcessar');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressFill = document.getElementById('progressFill');
+    const status = document.getElementById('status');
+    const infoBox = document.getElementById('infoBox');
+    const infoText = document.getElementById('infoText');
+
+    // Desabilita o botão
+    btnProcessar.disabled = true;
+    progressContainer.classList.add('active');
+    infoBox.style.display = 'none';
+
+    try {
+        // Lê o arquivo
+        status.textContent = "📖 Lendo arquivo...";
+        const texto = await file.text();
+
+        // Extrai as pessoas
+        status.textContent = "🔍 Extraindo pessoas...";
+        const pessoas = extrairPessoas(texto);
+
+        if (pessoas.length === 0) {
+            throw new Error("Nenhuma pessoa encontrada no arquivo!");
+        }
+
+        // Cria o ZIP
+        status.textContent = "📦 Criando arquivos...";
+        const zip = new JSZip();
+        const usados = new Set();
+
+        for (let i = 0; i < pessoas.length; i++) {
+            const pessoaJSON = pessoas[i];
+
+            // Tenta extrair o CPF do objeto
+            let nomeArquivo = '';
+            try {
+                const pessoaObj = JSON.parse(pessoaJSON);
+                const cpf = pessoaObj.cpf || pessoaObj.CPF || pessoaObj.Cpf;
+                
+                if (cpf) {
+                    // Remove caracteres especiais do CPF (pontos, traços)
+                    nomeArquivo = String(cpf).replace(/[^0-9]/g, '');
+                }
+            } catch (e) {
+                // Se não conseguir extrair CPF, usa hash
+            }
+
+            // Se não conseguiu extrair CPF, usa hash MD5
+            if (!nomeArquivo) {
+                nomeArquivo = SparkMD5.hash(pessoaJSON);
+            }
+
+            // Garante que o nome seja único (caso tenha CPFs duplicados)
+            let contador = 1;
+            let nomeFinal = nomeArquivo;
+            while (usados.has(nomeFinal)) {
+                nomeFinal = nomeArquivo + '_' + contador;
+                contador++;
+            }
+
+            usados.add(nomeFinal);
+
+            // Adiciona ao ZIP
+            zip.file(`${nomeFinal}.txt`, pessoaJSON);
+
+            // Atualiza progresso
+            const progresso = Math.round(((i + 1) / pessoas.length) * 100);
+            progressFill.style.width = progresso + '%';
+            progressFill.textContent = progresso + '%';
+            status.textContent = `📝 Processando ${i + 1} de ${pessoas.length}...`;
+
+            // Pequena pausa para atualizar a UI
+            if (i % 10 === 0) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
+
+        // Gera o arquivo ZIP
+        status.textContent = "🗜️ Compactando ZIP...";
+        const blob = await zip.generateAsync({
+            type: "blob",
+            compression: "DEFLATE",
+            compressionOptions: { level: 6 }
+        });
+
+        // Download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `pessoas_${Date.now()}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Sucesso
+        progressFill.style.width = '100%';
+        progressFill.textContent = '100%';
+        status.textContent = "✅ Concluído!";
+        status.classList.add('success');
+
+        infoBox.style.display = 'block';
+        infoText.innerHTML = `
+            <strong>${pessoas.length}</strong> pessoas encontradas<br>
+            <strong>${pessoas.length}</strong> arquivos TXT criados<br>
+            ZIP gerado com sucesso!
+        `;
+
+    } catch (error) {
+        console.error(error);
+        status.textContent = "❌ Erro: " + error.message;
+        status.classList.add('error');
+        
+        infoBox.style.display = 'block';
+        infoText.innerHTML = `<span class="error">Erro ao processar: ${error.message}</span>`;
+    } finally {
+        btnProcessar.disabled = false;
+    }
+}
+
+</script>
+
+</body>
+</html>
