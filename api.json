@@ -1,6 +1,6 @@
 {
   "apis": [
-    "https://play.bet.br/api/documents/validate",
+    "https://corsprxy.io/?https://play.bet.br/api/documents/validate",
     "https://donald.bet.br/api/documents/validate",
     "https://bateu.bet.br/api/documents/validate",
     "https://lucky.bet.br/api/documents/validate",
