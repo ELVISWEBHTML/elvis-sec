@@ -1,0 +1,12 @@
+{
+  "apis": [
+    "https://play.bet.br/api/documents/validate",
+    "https://donald.bet.br/api/documents/validate",
+    "https://bateu.bet.br/api/documents/validate",
+    "https://lucky.bet.br/api/documents/validate",
+    "https://vip.bet.br/api/documents/validate",
+    "https://premium.bet.br/api/documents/validate",
+    "https://gold.bet.br/api/documents/validate",
+    "https://star.bet.br/api/documents/validate"
+  ]
+}
