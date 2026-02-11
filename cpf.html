@@ -421,7 +421,7 @@ async function consultarCPF() {
     resultadoDiv.innerHTML = '<div class="loading">⚡ Carregando dados...</div>';
     
     try {
-        const response = await fetch(`https://portalpessoal-api.vercel.app/api?cpf=${cpfLimpo}`);
+        const response = await fetch(`https://portalpessoal-api.vercel.app/api/cpf?cpf=${cpfLimpo}`);
         const data = await response.json();
         
         resultadoDiv.innerHTML = '';
