@@ -13,10 +13,8 @@
         --accent-cyan: #00f0ff;
         --accent-purple: #b24bf3;
         --accent-pink: #ff2e97;
-        --accent-orange: #ff6b35;
         --text-primary: #ffffff;
         --text-secondary: #a0a9c9;
-        --border-glow: rgba(0, 240, 255, 0.3);
     }
     
     * {
@@ -30,15 +28,12 @@
         background: var(--bg-primary);
         background-image: 
             radial-gradient(circle at 20% 50%, rgba(178, 75, 243, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 40% 20%, rgba(255, 46, 151, 0.1) 0%, transparent 50%);
+            radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.15) 0%, transparent 50%);
         min-height: 100vh;
         display: flex;
         justify-content: center;
         align-items: flex-start;
         padding: 40px 20px;
-        position: relative;
-        overflow-x: hidden;
     }
     
     body::before {
@@ -71,11 +66,9 @@
         border-radius: 20px;
         box-shadow: 
             0 20px 60px rgba(0, 0, 0, 0.5),
-            0 0 0 1px rgba(0, 240, 255, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            0 0 0 1px rgba(0, 240, 255, 0.1);
         width: 100%;
-        max-width: 800px;
-        position: relative;
+        max-width: 900px;
         animation: fadeIn 0.6s ease-out;
     }
     
@@ -102,25 +95,7 @@
         background-clip: text;
         text-transform: uppercase;
         letter-spacing: 3px;
-        position: relative;
         text-shadow: 0 0 40px rgba(0, 240, 255, 0.5);
-    }
-    
-    h1::after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 100px;
-        height: 3px;
-        background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
-        animation: pulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 0.5; width: 100px; }
-        50% { opacity: 1; width: 150px; }
     }
     
     .input-group {
@@ -166,7 +141,6 @@
         cursor: pointer;
         text-transform: uppercase;
         letter-spacing: 2px;
-        position: relative;
         overflow: hidden;
         transition: all 0.3s ease;
     }
@@ -193,10 +167,6 @@
         left: 100%;
     }
     
-    button:active {
-        transform: translateY(-1px);
-    }
-    
     #resultado {
         margin-top: 40px;
     }
@@ -215,7 +185,12 @@
         50% { opacity: 1; }
     }
     
-    .bloco-container {
+    .info-destaque {
+        background: var(--bg-card);
+        border: 2px solid var(--accent-cyan);
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
         animation: slideIn 0.5s ease-out;
     }
     
@@ -230,93 +205,86 @@
         }
     }
     
-    .bloco-titulo {
-        background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-        padding: 15px 20px;
-        border-radius: 10px;
-        margin-top: 25px;
+    .info-item {
         margin-bottom: 15px;
-        font-weight: 700;
-        font-family: 'Orbitron', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        font-size: 14px;
-        color: var(--text-primary);
-        box-shadow: 
-            0 5px 20px rgba(178, 75, 243, 0.3),
-            0 0 0 1px rgba(255, 255, 255, 0.1);
-        position: relative;
-        overflow: hidden;
+        font-size: 18px;
     }
     
-    .bloco-titulo::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        animation: shimmer 3s ease-in-out infinite;
+    .info-item:last-child {
+        margin-bottom: 0;
     }
     
-    @keyframes shimmer {
-        0% { left: -100%; }
-        100% { left: 100%; }
-    }
-    
-    .tabela-vertical {
-        background: var(--bg-card);
-        border: 1px solid rgba(0, 240, 255, 0.15);
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 15px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-    }
-    
-    .tabela-vertical .linha {
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        display: flex;
-        align-items: flex-start;
-        transition: all 0.2s ease;
-    }
-    
-    .tabela-vertical .linha:hover {
-        background: rgba(0, 240, 255, 0.05);
-        padding-left: 10px;
-        border-left: 3px solid var(--accent-cyan);
-    }
-    
-    .tabela-vertical .linha:last-child {
-        border-bottom: none;
-    }
-    
-    .campo {
-        font-weight: 700;
+    .label {
         color: var(--accent-cyan);
-        min-width: 200px;
-        text-transform: uppercase;
-        font-size: 12px;
-        letter-spacing: 1px;
-        margin-right: 15px;
-        flex-shrink: 0;
+        font-weight: 700;
+        margin-right: 10px;
     }
     
     .valor {
         color: var(--text-primary);
+        font-weight: 400;
+    }
+    
+    .json-container {
+        background: var(--bg-card);
+        border: 1px solid rgba(0, 240, 255, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+        position: relative;
+        animation: slideIn 0.6s ease-out;
+    }
+    
+    .json-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+    }
+    
+    .json-title {
+        color: var(--accent-purple);
+        font-weight: 700;
         font-size: 14px;
-        line-height: 1.5;
-        word-break: break-word;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     
-    .valor.destaque-sim {
-        color: var(--accent-cyan);
-        font-weight: 600;
+    .copy-btn {
+        background: var(--accent-purple);
+        color: var(--text-primary);
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-family: 'JetBrains Mono', monospace;
+        transition: all 0.3s ease;
     }
     
-    .valor.destaque-nao {
-        color: var(--text-secondary);
+    .copy-btn:hover {
+        background: var(--accent-pink);
+        transform: scale(1.05);
+    }
+    
+    .json-content {
+        background: #0d1117;
+        padding: 20px;
+        border-radius: 8px;
+        overflow-x: auto;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .json-content pre {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
     }
     
     .erro {
@@ -328,33 +296,12 @@
         background: var(--bg-card);
         border: 2px dashed var(--accent-pink);
         border-radius: 12px;
-        margin-top: 20px;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .container {
-            padding: 25px;
-        }
-        
-        h1 {
-            font-size: 1.8rem;
-            letter-spacing: 2px;
-        }
-        
-        .campo {
-            min-width: 150px;
-            font-size: 11px;
-        }
-        
-        .valor {
-            font-size: 13px;
-        }
     }
     
     /* Scroll customizado */
     ::-webkit-scrollbar {
         width: 10px;
+        height: 10px;
     }
     
     ::-webkit-scrollbar-track {
@@ -368,6 +315,22 @@
     
     ::-webkit-scrollbar-thumb:hover {
         background: linear-gradient(180deg, var(--accent-purple), var(--accent-pink));
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .container {
+            padding: 25px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+        }
+        
+        .info-item {
+            font-size: 16px;
+        }
     }
 </style>
 </head>
@@ -412,139 +375,35 @@ function limparCPF(cpf) {
     return cpf.replace(/\D/g,'');
 }
 
-// Tradução de campos
-const traducaoCampos = {
-    'cpf': 'CPF',
-    'number': 'Número',
-    'name': 'Nome',
-    'nome': 'Nome',
-    'birth_date': 'Data de Nascimento',
-    'birthdate': 'Data de Nascimento',
-    'nascimento': 'Nascimento',
-    'birthdatestring': 'Data de Nascimento',
-    'age': 'Idade',
-    'gender': 'Gênero',
-    'genero': 'Gênero',
-    'situation': 'Situação',
-    'nationality': 'Nacionalidade',
-    'mothers_name': 'Nome da Mãe',
-    'zodiac_sign': 'Signo',
-    'api': 'API Consultada',
-    'status': 'Status',
-    'success': 'Sucesso',
-    'bypass': 'Bypass',
-    'blacklist': 'Lista Negra',
-    'blacklist_info.minor': 'Menor de Idade',
-    'blacklist_info.deseased': 'Falecido',
-    'blacklist_info.pep': 'Pessoa Exposta Politicamente',
-    'blacklist_info.fraudster': 'Fraudador',
-    'blacklist_info.from_mf': 'Do MF',
-    'blacklist_info.from_spa_mf': 'Do SPA MF',
-    'blacklist_info.pld_ft': 'PLD FT',
-    'blacklist_info.linked_sports': 'Ligado a Esportes',
-    'blacklist_info.bet_owner': 'Dono de Casa de Aposta',
-    'blacklist_info.bet_owner_relative': 'Parente de Dono de Casa de Aposta',
-    'blacklist_info.bet_employee': 'Funcionário de Casa de Aposta',
-    'blacklist_info.bet_employee_relative': 'Parente de Funcionário de Casa de Aposta'
-};
-
-// Função para traduzir campo
-function traduzirCampo(chave) {
-    return traducaoCampos[chave.toLowerCase()] || chave.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-}
-
-// Função para processar objetos aninhados
-function achatarObjeto(obj, prefixo = '') {
-    let resultado = {};
+// Função para extrair CPF e data de nascimento
+function extrairDadosBasicos(dados) {
+    let cpf = null;
+    let dataNascimento = null;
     
-    for (let chave in obj) {
-        if (obj.hasOwnProperty(chave)) {
-            const valor = obj[chave];
-            const novaChave = prefixo ? `${prefixo}.${chave}` : chave;
-            
-            if (valor === null || valor === undefined) {
-                resultado[novaChave] = 'N/A';
-            } else if (typeof valor === 'object' && !Array.isArray(valor)) {
-                Object.assign(resultado, achatarObjeto(valor, novaChave));
-            } else if (Array.isArray(valor)) {
-                resultado[novaChave] = JSON.stringify(valor);
-            } else {
-                resultado[novaChave] = valor;
-            }
-        }
+    // Procura CPF
+    if (dados.cpf) {
+        cpf = dados.cpf;
+    } else if (dados.number) {
+        cpf = dados.number;
     }
     
-    return resultado;
-}
-
-// Função para formatar valor
-function formatarValor(chave, valor) {
-    // Formata booleanos
-    if (typeof valor === 'boolean') {
-        return valor ? 'Sim' : 'Não';
+    // Se tem estrutura com resposta
+    if (dados.resposta) {
+        if (dados.resposta.cpf) cpf = dados.resposta.cpf;
+        if (dados.resposta.birth_date) dataNascimento = dados.resposta.birth_date;
+        if (dados.resposta.nascimento) dataNascimento = dados.resposta.nascimento;
+        if (dados.resposta.birthdate) dataNascimento = dados.resposta.birthdate;
     }
     
-    // Formata gênero
-    if (chave.toLowerCase().includes('gender') || chave.toLowerCase().includes('genero')) {
-        if (valor === 0 || valor === 'M') return 'Masculino';
-        if (valor === 1 || valor === 'F') return 'Feminino';
+    // Procura data de nascimento diretamente
+    if (!dataNascimento) {
+        if (dados.birth_date) dataNascimento = dados.birth_date;
+        if (dados.birthdate) dataNascimento = dados.birthdate;
+        if (dados.nascimento) dataNascimento = dados.nascimento;
+        if (dados.birthDateString) dataNascimento = dados.birthDateString;
     }
     
-    // Formata datas
-    if (chave.toLowerCase().includes('date') || chave.toLowerCase().includes('nascimento')) {
-        if (valor && typeof valor === 'string') {
-            return valor;
-        }
-    }
-    
-    return valor;
-}
-
-// Função para criar tabela vertical
-function criarTabelaVertical(obj, titulo = null) {
-    const divContainer = document.createElement('div');
-    divContainer.className = 'bloco-container';
-    
-    if (titulo) {
-        const tituloDiv = document.createElement('div');
-        tituloDiv.className = 'bloco-titulo';
-        tituloDiv.textContent = titulo;
-        divContainer.appendChild(tituloDiv);
-    }
-    
-    const divTabela = document.createElement('div');
-    divTabela.className = 'tabela-vertical';
-    
-    const objAchatado = achatarObjeto(obj);
-    
-    Object.keys(objAchatado).forEach((chave, index) => {
-        const linha = document.createElement('div');
-        linha.className = 'linha';
-        linha.style.animationDelay = `${index * 0.05}s`;
-        
-        const campoSpan = document.createElement('span');
-        campoSpan.className = 'campo';
-        campoSpan.textContent = traduzirCampo(chave);
-        
-        const valorSpan = document.createElement('span');
-        valorSpan.className = 'valor';
-        const valorFormatado = formatarValor(chave, objAchatado[chave]);
-        valorSpan.textContent = valorFormatado;
-        
-        // Adiciona classes especiais para Sim/Não
-        if (valorFormatado === 'Sim') {
-            valorSpan.classList.add('destaque-sim');
-        } else if (valorFormatado === 'Não') {
-            valorSpan.classList.add('destaque-nao');
-        }
-        
-        linha.appendChild(campoSpan);
-        linha.appendChild(valorSpan);
-        divTabela.appendChild(linha);
-    });
-    
-    divContainer.appendChild(divTabela);
-    return divContainer;
+    return { cpf, dataNascimento };
 }
 
 // Função de consulta
@@ -570,25 +429,66 @@ async function consultarCPF() {
         if(data && data.sucesso && data.dados) {
             const dados = data.dados;
             
-            // Verifica formato com múltiplos blocos
-            if (dados.cpf && dados.api && dados.resposta) {
-                // Bloco 1: Informações básicas
-                const blocoBasico = {
-                    cpf: dados.cpf,
-                    api: dados.api
-                };
-                const tabelaBasica = criarTabelaVertical(blocoBasico, '📋 Informações da Consulta');
-                resultadoDiv.appendChild(tabelaBasica);
-                
-                // Bloco 2: Resposta da API
-                const tabelaResposta = criarTabelaVertical(dados.resposta, '👤 Dados Pessoais');
-                resultadoDiv.appendChild(tabelaResposta);
-                
-            } else {
-                // Formato único
-                const tabela = criarTabelaVertical(dados, '👤 Dados do CPF');
-                resultadoDiv.appendChild(tabela);
+            // Extrai CPF e data de nascimento
+            const { cpf, dataNascimento } = extrairDadosBasicos(dados);
+            
+            // Cria bloco de informações destacadas
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'info-destaque';
+            
+            if (cpf) {
+                const cpfItem = document.createElement('div');
+                cpfItem.className = 'info-item';
+                cpfItem.innerHTML = `<span class="label">CPF:</span><span class="valor">${cpf}</span>`;
+                infoDiv.appendChild(cpfItem);
             }
+            
+            if (dataNascimento) {
+                const nascItem = document.createElement('div');
+                nascItem.className = 'info-item';
+                nascItem.innerHTML = `<span class="label">Data de Nascimento:</span><span class="valor">${dataNascimento}</span>`;
+                infoDiv.appendChild(nascItem);
+            }
+            
+            resultadoDiv.appendChild(infoDiv);
+            
+            // Cria bloco JSON
+            const jsonDiv = document.createElement('div');
+            jsonDiv.className = 'json-container';
+            
+            const jsonHeader = document.createElement('div');
+            jsonHeader.className = 'json-header';
+            
+            const jsonTitle = document.createElement('div');
+            jsonTitle.className = 'json-title';
+            jsonTitle.textContent = '📄 JSON Completo';
+            
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = '📋 Copiar';
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+                copyBtn.textContent = '✓ Copiado!';
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copiar';
+                }, 2000);
+            };
+            
+            jsonHeader.appendChild(jsonTitle);
+            jsonHeader.appendChild(copyBtn);
+            
+            const jsonContent = document.createElement('div');
+            jsonContent.className = 'json-content';
+            
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(data, null, 2);
+            
+            jsonContent.appendChild(pre);
+            jsonDiv.appendChild(jsonHeader);
+            jsonDiv.appendChild(jsonContent);
+            
+            resultadoDiv.appendChild(jsonDiv);
+            
         } else {
             resultadoDiv.innerHTML = '<div class="erro">❌ CPF não encontrado ou sem dados disponíveis.</div>';
         }
