@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta CPF</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .age-highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 24px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+            text-align: center;
+        }
+
+        .error.show {
+            display: block;
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .api-status {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+
+        .success-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Consulta CPF</h1>
+        
+        <div class="input-group">
+            <label for="cpf">CPF (somente números)</label>
+            <input type="text" id="cpf" placeholder="Digite o CPF" maxlength="11">
+        </div>
+
+        <button onclick="consultarCPF()">Consultar</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p class="loading-text" id="loadingText">Consultando...</p>
+            <p class="api-status" id="apiStatus"></p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <div class="result-item">
+                <div class="result-label">Nome Completo</div>
+                <div class="result-value" id="nome">-</div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">CPF</div>
+                <div class="result-value" id="cpfFormatado">-</div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Data de Nascimento</div>
+                <div class="result-value" id="nascimento">-</div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Idade</div>
+                <div class="result-value age-highlight" id="idade">-</div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Gênero</div>
+                <div class="result-value" id="genero">-</div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">API Utilizada</div>
+                <div class="result-value" id="apiUtilizada" style="font-size: 12px; color: #666;">-</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lista de APIs (será carregada do api.json ou usa fallback)
+        let apiUrls = [];
+        
+        // Carregar APIs do arquivo JSON
+        async function carregarAPIs() {
+            try {
+                const response = await fetch('api.json');
+                const data = await response.json();
+                apiUrls = data.apis;
+                console.log('APIs carregadas:', apiUrls.length);
+            } catch (error) {
+                console.warn('Não foi possível carregar api.json, usando URLs padrão');
+                // Fallback caso o arquivo não seja encontrado
+                apiUrls = [
+                    "https://play.bet.br/api/documents/validate",
+                    "https://donald.bet.br/api/documents/validate",
+                    "https://bateu.bet.br/api/documents/validate",
+                    "https://lucky.bet.br/api/documents/validate",
+                    "https://vip.bet.br/api/documents/validate"
+                ];
+            }
+        }
+
+        function formatarCPF(cpf) {
+            return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        function formatarData(data) {
+            const [ano, mes, dia] = data.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function calcularIdade(dataNascimento) {
+            const hoje = new Date();
+            const nascimento = new Date(dataNascimento);
+            
+            let idade = hoje.getFullYear() - nascimento.getFullYear();
+            const mesAtual = hoje.getMonth();
+            const mesNascimento = nascimento.getMonth();
+            
+            if (mesAtual < mesNascimento || (mesAtual === mesNascimento && hoje.getDate() < nascimento.getDate())) {
+                idade--;
+            }
+            
+            return idade;
+        }
+
+        function extrairDominio(url) {
+            try {
+                const urlObj = new URL(url);
+                return urlObj.hostname;
+            } catch {
+                return url;
+            }
+        }
+
+        async function tentarAPI(url, cpf, numeroTentativa, totalAPIs) {
+            const apiStatus = document.getElementById('apiStatus');
+            apiStatus.textContent = `Tentando API ${numeroTentativa}/${totalAPIs}: ${extrairDominio(url)}`;
+            
+            console.log(`Tentando API ${numeroTentativa}:`, url);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Origin': new URL(url).origin,
+                        'Referer': new URL(url).origin + '/',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    },
+                    mode: 'cors',
+                    credentials: 'omit',
+                    body: JSON.stringify({
+                        number: cpf,
+                        captcha_token: ""
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log(`✓ API funcionou:`, url);
+                    return { success: true, data: data, url: url };
+                } else {
+                    console.log(`✗ API retornou success=false:`, url);
+                    return { success: false, error: 'CPF não encontrado', url: url };
+                }
+
+            } catch (error) {
+                console.log(`✗ Erro na API ${url}:`, error.message);
+                return { success: false, error: error.message, url: url };
+            }
+        }
+
+        async function consultarCPF() {
+            const cpfInput = document.getElementById('cpf');
+            const cpf = cpfInput.value.replace(/\D/g, '');
+            
+            const loading = document.getElementById('loading');
+            const loadingText = document.getElementById('loadingText');
+            const apiStatus = document.getElementById('apiStatus');
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+
+            // Limpar mensagens anteriores
+            error.classList.remove('show');
+            result.classList.remove('show');
+
+            if (cpf.length !== 11) {
+                error.textContent = 'Por favor, digite um CPF válido com 11 dígitos';
+                error.classList.add('show');
+                return;
+            }
+
+            // Garantir que as APIs estão carregadas
+            if (apiUrls.length === 0) {
+                await carregarAPIs();
+            }
+
+            loading.classList.add('show');
+            loadingText.textContent = 'Consultando...';
+
+            let sucessoEncontrado = false;
+            let ultimoErro = '';
+
+            // Tentar cada API sequencialmente
+            for (let i = 0; i < apiUrls.length; i++) {
+                const resultado = await tentarAPI(apiUrls[i], cpf, i + 1, apiUrls.length);
+                
+                if (resultado.success) {
+                    // Sucesso! Preencher os dados
+                    sucessoEncontrado = true;
+                    loading.classList.remove('show');
+
+                    const data = resultado.data;
+                    document.getElementById('nome').textContent = data.name || data.nome || '-';
+                    document.getElementById('cpfFormatado').textContent = formatarCPF(cpf);
+                    document.getElementById('nascimento').textContent = formatarData(data.birth_date);
+                    
+                    const idade = calcularIdade(data.birth_date);
+                    document.getElementById('idade').textContent = `${idade} anos`;
+                    
+                    const genero = data.gender === 0 ? 'Masculino' : data.gender === 1 ? 'Feminino' : 'Não informado';
+                    document.getElementById('genero').textContent = genero;
+                    
+                    document.getElementById('apiUtilizada').textContent = extrairDominio(resultado.url);
+
+                    result.classList.add('show');
+                    break;
+                }
+                
+                ultimoErro = resultado.error;
+            }
+
+            if (!sucessoEncontrado) {
+                loading.classList.remove('show');
+                error.textContent = `Nenhuma API disponível conseguiu processar a consulta. Todas as ${apiUrls.length} APIs falharam. Último erro: ${ultimoErro}`;
+                error.classList.add('show');
+            }
+        }
+
+        // Permitir consulta ao pressionar Enter
+        document.getElementById('cpf').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                consultarCPF();
+            }
+        });
+
+        // Permitir apenas números no campo CPF
+        document.getElementById('cpf').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        // Carregar APIs ao iniciar
+        carregarAPIs();
+    </script>
+</body>
+</html>
