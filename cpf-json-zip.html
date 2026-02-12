@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
+<html lang="pt-br"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conversor JSON para TXT por Pessoa</title>
@@ -170,7 +169,7 @@ h1 {
     font-weight: bold;
 }
 </style>
-</head>
+<style id="htmlEditorProStyle">#htmlEditorPro{position:fixed;top:30px;left:50%;transform:translateX(-50%);width:95vw;max-width:420px;height:70vh;max-height:90vh;background:#222;color:#fff;z-index:999999;box-shadow:0 0 18px #0009;display:flex;flex-direction:column;font-family:'Fira Mono','Consolas','monospace';border-radius:12px;}#htmlEditorProBar{background:#333;padding:12px;cursor:move;display:flex;align-items:center;gap:10px;border-bottom:2px solid #fff;font-size:18px;user-select:none;border-top-left-radius:12px;border-top-right-radius:12px;}#htmlEditorProBar b{color:#fff;font-weight:bold;font-size:18px;letter-spacing:1px;font-family:inherit;}#htmlEditorProBtns{display:flex;gap:8px;margin-left:auto;}#htmlEditorProBtns button{padding:7px 10px;border:none;border-radius:7px;font-size:16px;font-weight:bold;cursor:pointer;box-shadow:0 2px 8px #0004;outline:none;}#htmlEditorProBtnRun{background:#0a0;color:#fff;}#htmlEditorProBtnSave{background:#06c;color:#fff;}#htmlEditorProBtnEdit{background:#f8d703;color:#222;}#htmlEditorProBtnClose{background:#c00;color:#fff;}#htmlEditorProBtnEnd{background:#444;color:#fff;}#htmlEditorPro textarea{flex:1;padding:10px;background:#222;color:#fff;font-family:inherit;font-size:14px;resize:none;border:none;outline:none;width:100%;height:100%;line-height:1.5;overflow:auto;border-bottom-left-radius:12px;border-bottom-right-radius:12px;}@media(max-width:600px){#htmlEditorPro{width:98vw;max-width:98vw;height:90vh;}#htmlEditorProBar{font-size:16px;padding:8px;}#htmlEditorProBtns button{font-size:15px;padding:6px 6px;}#htmlEditorPro textarea{font-size:12px;padding:6px;}}</style></head>
 
 <body>
 
@@ -218,6 +217,49 @@ function updateFileName() {
     }
 }
 
+function isPessoa(obj) {
+    // Verifica se o objeto tem CPF (é uma pessoa)
+    return obj && typeof obj === 'object' && (obj.cpf || obj.CPF || obj.Cpf);
+}
+
+function encontrarPessoas(obj, pessoas = []) {
+    // Se o objeto é null ou não é um objeto/array, retorna
+    if (!obj || typeof obj !== 'object') {
+        return pessoas;
+    }
+    
+    // Se é um array
+    if (Array.isArray(obj)) {
+        for (const item of obj) {
+            // Se o item é uma pessoa, adiciona
+            if (isPessoa(item)) {
+                pessoas.push(JSON.stringify(item, null, 2));
+            }
+            // Se o item é um objeto ou array, busca recursivamente
+            else if (typeof item === 'object') {
+                encontrarPessoas(item, pessoas);
+            }
+        }
+    }
+    // Se é um objeto
+    else {
+        // Se o próprio objeto é uma pessoa, adiciona
+        if (isPessoa(obj)) {
+            pessoas.push(JSON.stringify(obj, null, 2));
+        }
+        // Busca em todas as propriedades do objeto
+        else {
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    encontrarPessoas(obj[key], pessoas);
+                }
+            }
+        }
+    }
+    
+    return pessoas;
+}
+
 function extrairPessoas(texto) {
     const pessoas = [];
     
@@ -225,31 +267,8 @@ function extrairPessoas(texto) {
         // Tenta fazer parse do JSON completo
         const dados = JSON.parse(texto);
         
-        // Se tem a estrutura com "partes"
-        if (dados.partes && Array.isArray(dados.partes)) {
-            // Itera sobre cada parte
-            for (const parte of dados.partes) {
-                // Cada parte é um array de pessoas
-                if (Array.isArray(parte)) {
-                    for (const pessoa of parte) {
-                        pessoas.push(JSON.stringify(pessoa, null, 2));
-                    }
-                } else {
-                    // Se a parte for um objeto único
-                    pessoas.push(JSON.stringify(parte, null, 2));
-                }
-            }
-        }
-        // Se for um array direto de pessoas
-        else if (Array.isArray(dados)) {
-            for (const pessoa of dados) {
-                pessoas.push(JSON.stringify(pessoa, null, 2));
-            }
-        }
-        // Se for um objeto único
-        else {
-            pessoas.push(JSON.stringify(dados, null, 2));
-        }
+        // Busca pessoas recursivamente em qualquer estrutura
+        encontrarPessoas(dados, pessoas);
         
     } catch (e) {
         // Se não conseguir fazer parse do JSON completo, tenta extrair objetos individuais
@@ -439,5 +458,6 @@ async function processar() {
 
 </script>
 
-</body>
-</html>
+
+
+</body></html>
