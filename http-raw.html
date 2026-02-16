@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HTTP RAW Tool PRO</title>
+<style>
+body{
+    background:#0f172a;
+    color:#e2e8f0;
+    font-family:monospace;
+}
+.container{
+    width:95%;
+    margin:20px auto;
+}
+input, select, textarea, button{
+    width:100%;
+    margin:5px 0;
+    padding:8px;
+    background:#1e293b;
+    color:#fff;
+    border:1px solid #334155;
+}
+textarea{
+    height:150px;
+}
+button{
+    background:#16a34a;
+    cursor:pointer;
+}
+.response{
+    background:#000;
+    padding:10px;
+    white-space:pre-wrap;
+    overflow:auto;
+    max-height:400px;
+    border:1px solid #334155;
+}
+h2{
+    color:#38bdf8;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>HTTP RAW TOOL PRO</h2>
+
+<label>Método</label>
+<select id="method">
+    <option>GET</option>
+    <option>POST</option>
+    <option>PUT</option>
+    <option>DELETE</option>
+    <option>PATCH</option>
+</select>
+
+<label>URL</label>
+<input type="text" id="url" placeholder="https://example.com/api">
+
+<label>Headers (Header: valor)</label>
+<textarea id="headers">
+Content-Type: application/x-www-form-urlencoded
+</textarea>
+
+<label>Body</label>
+<textarea id="body" placeholder="name=182882&pass=12345"></textarea>
+
+<label>
+<input type="checkbox" id="proxy"> Usar corsproxy.io
+</label>
+
+<button onclick="sendRequest()">ENVIAR</button>
+
+<h3>Resposta</h3>
+<div class="response" id="response"></div>
+</div>
+
+<script>
+async function sendRequest(){
+    let method = document.getElementById("method").value;
+    let url = document.getElementById("url").value.trim();
+    let rawHeaders = document.getElementById("headers").value.trim();
+    let body = document.getElementById("body").value;
+    let useProxy = document.getElementById("proxy").checked;
+
+    if(useProxy){
+        url = "https://corsproxy.io/?" + encodeURIComponent(url);
+    }
+
+    let headers = {};
+    rawHeaders.split("\n").forEach(line=>{
+        let parts = line.split(":");
+        if(parts.length > 1){
+            headers[parts[0].trim()] = parts.slice(1).join(":").trim();
+        }
+    });
+
+    let contentType = headers["Content-Type"] || headers["content-type"];
+
+    let requestBody;
+
+    if(method !== "GET"){
+        if(contentType && contentType.includes("application/json")){
+            try{
+                requestBody = JSON.stringify(JSON.parse(body));
+            }catch{
+                requestBody = body;
+            }
+        }else if(contentType && contentType.includes("application/x-www-form-urlencoded")){
+            requestBody = body;
+        }else{
+            requestBody = body;
+        }
+    }
+
+    try{
+        let response = await fetch(url,{
+            method: method,
+            headers: headers,
+            body: method !== "GET" ? requestBody : undefined
+        });
+
+        let text = await response.text();
+
+        document.getElementById("response").innerText =
+`STATUS: ${response.status} ${response.statusText}
+
+HEADERS:
+${[...response.headers.entries()].map(h=>h.join(": ")).join("\n")}
+
+BODY:
+${text}`;
+
+    }catch(e){
+        document.getElementById("response").innerText = "Erro: " + e;
+    }
+}
+</script>
+
+</body>
+</html>
