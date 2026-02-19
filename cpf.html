@@ -383,7 +383,7 @@ async function consultarCPF() {
                 `<span style="color:#00ff88;">✅ 200 OK</span>`;
         } else {
             statusDiv.innerHTML =
-                `<span style="color:#ff2e97;">❌ ${response.status} — Erro na API</span>`;
+                `<span style="color:#ff2e97;">❌ ${response.status} — Erro na consulta</span>`;
             resultadoDiv.appendChild(statusDiv);
             return;
         }
