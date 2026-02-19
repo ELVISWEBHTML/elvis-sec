@@ -422,8 +422,29 @@ async function consultarCPF() {
     
     try {
         const response = await fetch(`https://apidecpf-info.vercel.app/api/cpf?cpf=${cpfLimpo}`);
-        const data = await response.json();
-        
+
+if (response.status === 200) {
+
+    const data = await response.json();
+
+    resultadoDiv.innerHTML = '';
+
+    // ====== CRIA IFRAME SE 200 OK ======
+    const iframeContainer = document.createElement('div');
+    iframeContainer.style.marginTop = '30px';
+
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://apidecpf-info.vercel.app/api/cpf?cpf=${cpfLimpo}`;
+    iframe.style.width = '100%';
+    iframe.style.height = '400px';
+    iframe.style.border = '2px solid #00f0ff';
+    iframe.style.borderRadius = '12px';
+    iframe.style.background = '#111';
+
+    iframeContainer.appendChild(iframe);
+    resultadoDiv.appendChild(iframeContainer);
+
+    // continua o código normal abaixo...
         resultadoDiv.innerHTML = '';
         
         if(data && data.sucesso && data.dados) {
