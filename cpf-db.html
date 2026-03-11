@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPF · Consulta de Base</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #00ff9d;
+    --accent2: #0066ff;
+    --accent3: #ff9d00;
+    --danger: #ff3b5c;
+    --text: #e2e2f0;
+    --muted: #555570;
+    --card: #13131c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,157,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,157,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  header {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 48px;
+  }
+  .logo-badge {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text);
+    line-height: 1;
+  }
+  header h1 span { color: var(--accent); }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .25s;
+    background: var(--surface);
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-zone:hover, .upload-zone.drag {
+    border-color: var(--accent);
+    background: rgba(0,255,157,.04);
+  }
+  .upload-zone::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(0,255,157,.06), transparent 70%);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .upload-zone:hover::after { opacity: 1; }
+  .upload-icon { font-size: 40px; margin-bottom: 12px; display: block; }
+  .upload-zone p { color: var(--muted); font-size: 13px; }
+  .upload-zone strong { color: var(--accent); }
+  #file-input { display: none; }
+
+  /* Loading overlay */
+  .loading-overlay {
+    display: none;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card);
+    padding: 36px 28px;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  .loading-overlay.active { display: block; }
+
+  .loading-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .loading-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .progress-track {
+    background: var(--border);
+    border-radius: 100px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 100px;
+    transition: width .12s ease;
+    position: relative;
+  }
+  .progress-bar::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 60px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.4));
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .progress-info b { color: var(--accent); font-size: 14px; }
+
+  .stage-dots {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+  }
+  .stage {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    transition: color .3s;
+  }
+  .stage.active { color: var(--accent); }
+  .stage.done { color: var(--muted); opacity: .5; }
+  .stage-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background .3s;
+    flex-shrink: 0;
+  }
+  .stage.active .stage-dot { background: var(--accent); animation: pdot 1s infinite; }
+  .stage.done .stage-dot { background: var(--muted); }
+  @keyframes pdot { 0%,100%{box-shadow:0 0 0 0 rgba(0,255,157,.5)} 50%{box-shadow:0 0 0 5px rgba(0,255,157,0)} }
+
+  /* DB info */
+  .db-info {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--muted);
+    display: none;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .db-badge {
+    background: rgba(0,255,157,.08);
+    border: 1px solid rgba(0,255,157,.15);
+    color: var(--accent);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* Table selector */
+  .table-row {
+    display: none;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  select, input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  select:focus, input:focus { border-color: var(--accent); }
+  select { cursor: pointer; }
+
+  /* Search panel + tabs */
+  .search-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    display: none;
+  }
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    background: none; border: none;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: var(--muted);
+    padding: 14px 24px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all .2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-content { display: none; padding: 28px; }
+  .tab-content.active { display: block; }
+
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .cpf-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color .2s;
+    max-width: 380px;
+    margin-bottom: 14px;
+  }
+  .cpf-input-wrapper:focus-within { border-color: var(--accent); }
+  .cpf-part-label {
+    color: var(--muted);
+    font-size: 15px;
+    padding: 0 14px;
+    user-select: none;
+    white-space: nowrap;
+  }
+  #middle-input {
+    background: transparent; border: none;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px; font-weight: 700;
+    width: 120px; text-align: center;
+    letter-spacing: 5px;
+    padding: 13px 0;
+  }
+  #middle-input:focus { outline: none; }
+  #middle-input::placeholder { color: var(--muted); letter-spacing: 2px; font-size: 14px; }
+
+  .json-search-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .json-search-row .field-group { flex: 1; min-width: 220px; }
+  #json-query-input { width: 100%; font-size: 15px; padding: 13px 16px; }
+
+  .quick-tags {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .quick-tag {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .quick-tag:hover { border-color: var(--accent3); color: var(--accent3); background: rgba(255,157,0,.06); }
+
+  .hint { font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.7; }
+  .hint b { color: var(--text); }
+  .hint code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--accent3);
+    font-size: 11px;
+  }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  .btn-search {
+    background: var(--accent); color: #000;
+    border: none;
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 13px; letter-spacing: 1px;
+    padding: 13px 28px; border-radius: 8px;
+    cursor: pointer; transition: all .2s;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .btn-search:hover { background: #fff; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,255,157,.25); }
+  .btn-search:active { transform: translateY(0); }
+  .btn-search:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-search.orange { background: var(--accent3); }
+  .btn-search.orange:hover { background: #ffd57a; box-shadow: 0 8px 24px rgba(255,157,0,.25); }
+
+  .error-msg {
+    background: rgba(255,59,92,.08);
+    border: 1px solid rgba(255,59,92,.3);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--danger);
+    font-size: 12px;
+    margin-bottom: 14px;
+    display: none;
+  }
+
+  /* Results */
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .results-count { font-size: 13px; color: var(--muted); }
+  .results-count b { color: var(--accent); }
+  .results-count .or { color: var(--accent3); }
+
+  #inline-filter {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px; color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    outline: none; width: 240px;
+    transition: border-color .2s;
+  }
+  #inline-filter:focus { border-color: var(--accent3); }
+  #inline-filter::placeholder { color: var(--muted); }
+
+  .table-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--card);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--surface); border-bottom: 1px solid var(--border); }
+  thead th {
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase;
+    font-weight: 500;
+  }
+  tbody tr { border-bottom: 1px solid rgba(30,30,46,.8); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(0,255,157,.03); cursor: pointer; }
+  tbody td { padding: 13px 20px; font-size: 13px; vertical-align: middle; }
+
+  .cpf-cell { white-space: nowrap; font-weight: 500; }
+  .cpf-cell .masked { color: var(--muted); }
+  .cpf-cell .mid { color: var(--accent); font-weight: 700; }
+
+  .json-summary { font-size: 12px; line-height: 1.8; }
+  .json-summary .kv { margin-right: 16px; display: inline-block; }
+  .json-summary .k { color: var(--muted); }
+  .json-summary .v { color: var(--text); }
+  .json-summary mark { background: rgba(255,157,0,.25); color: var(--accent3); border-radius: 2px; padding: 0 2px; }
+
+  /* Modal */
+  .modal-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.82);
+    z-index: 100; backdrop-filter: blur(6px);
+    align-items: center; justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 720px; width: 92%;
+    max-height: 88vh; overflow-y: auto;
+    position: relative;
+    animation: min .2s ease;
+  }
+  @keyframes min { from{opacity:0;transform:scale(.95) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--border); border: none; color: var(--text);
+    width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .modal-close:hover { background: var(--danger); }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; color: var(--accent); margin-bottom: 4px; }
+  .modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+  .modal-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .modal-tab {
+    background: none; border: none;
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600;
+    color: var(--muted); padding: 10px 18px; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: all .2s;
+  }
+  .modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .modal-pane { display: none; }
+  .modal-pane.active { display: block; }
+
+  .fields-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+  }
+  .field-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .field-card .fk { font-size: 10px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; }
+  .field-card .fv { font-size: 14px; color: var(--text); font-weight: 500; word-break: break-word; }
+  .field-card.important { border-color: rgba(255,157,0,.25); }
+  .field-card.important .fv { color: var(--accent3); }
+
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px; font-size: 12px; line-height: 1.8;
+    overflow-x: auto; color: var(--text);
+    white-space: pre-wrap; word-break: break-word;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(0,0,0,.15);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px; }
+  .empty-state span { display: block; font-size: 40px; margin-bottom: 14px; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div><div class="logo-badge">SQL · DB</div></div>
+    <h1>CPF <span>Lookup</span></h1>
+  </header>
+
+  <!-- Upload -->
+  <div class="upload-zone" id="upload-zone">
+    <span class="upload-icon">🗄️</span>
+    <p><strong>Arraste seu arquivo .db aqui</strong> ou clique para selecionar</p>
+    <p style="margin-top:8px;">SQLite · Suporta arquivos grandes (600MB+)</p>
+    <input type="file" id="file-input" accept=".db,.sqlite,.sqlite3">
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-title" id="loading-title">📂 Lendo arquivo…</div>
+    <div class="loading-sub" id="loading-sub">Aguarde, carregando banco de dados</div>
+    <div class="progress-track">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="progress-info">
+      <span id="prog-loaded">0 MB</span>
+      <b id="prog-pct">0%</b>
+      <span id="prog-total">— MB</span>
+    </div>
+    <div class="stage-dots">
+      <div class="stage active" id="stage-read"><div class="stage-dot"></div>Leitura</div>
+      <div class="stage" id="stage-parse"><div class="stage-dot"></div>Parsing</div>
+      <div class="stage" id="stage-ready"><div class="stage-dot"></div>Pronto</div>
+    </div>
+  </div>
+
+  <!-- DB info -->
+  <div class="db-info" id="db-info">
+    📁 <span id="db-filename" style="color:var(--text)"></span>
+    <span class="db-badge" id="db-size-badge"></span>
+    <span class="db-badge" id="db-tables-badge"></span>
+    <span class="db-badge" id="db-rows-badge"></span>
+  </div>
+
+  <!-- Columns -->
+  <div class="table-row" id="table-row">
+    <div class="field-group"><span class="field-label">Tabela</span><select id="table-select"></select></div>
+    <div class="field-group"><span class="field-label">Coluna CPF</span><select id="col-cpf"></select></div>
+    <div class="field-group"><span class="field-label">Coluna JSON</span><select id="col-json"></select></div>
+  </div>
+
+  <!-- Search panel -->
+  <div class="search-panel" id="search-panel">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('cpf',this)">🔢 Dígitos do Meio</button>
+      <button class="tab-btn" onclick="switchTab('json',this)">🔍 Busca no JSON</button>
+    </div>
+
+    <!-- Tab CPF -->
+    <div class="tab-content active" id="tab-cpf">
+      <p class="section-label">Buscar por posição no CPF</p>
+      <div class="cpf-input-wrapper">
+        <span class="cpf-part-label">***.</span>
+        <input type="text" id="middle-input" maxlength="6" placeholder="000000" inputmode="numeric">
+        <span class="cpf-part-label">-**</span>
+      </div>
+      <p class="hint">Digite os <b>6 dígitos do meio</b> · Ex: <code>680938</code> → busca todos os CPFs com <b>***.680.938-**</b></p>
+      <div class="error-msg" id="error-cpf"></div>
+      <button class="btn-search" id="btn-cpf" onclick="searchCPF()">Buscar CPF</button>
+    </div>
+
+    <!-- Tab JSON -->
+    <div class="tab-content" id="tab-json">
+      <p class="section-label">Buscar dentro do conteúdo JSON</p>
+      <div class="json-search-row">
+        <div class="field-group">
+          <span class="field-label">O que você quer encontrar?</span>
+          <input type="text" id="json-query-input" placeholder="Ex: Marcelia Tavares, 01/01/1977, São Paulo…">
+        </div>
+        <button class="btn-search orange" id="btn-json" onclick="searchJSON()">Buscar</button>
+      </div>
+      <div class="quick-tags">
+        <span class="quick-tag" onclick="setQ('NOME')">👤 NOME</span>
+        <span class="quick-tag" onclick="setQ('NASC')">📅 NASC</span>
+        <span class="quick-tag" onclick="setQ('MAE')">👩 MAE</span>
+        <span class="quick-tag" onclick="setQ('PAI')">👨 PAI</span>
+        <span class="quick-tag" onclick="setQ('MUNICIPIO')">📍 MUNICÍPIO</span>
+        <span class="quick-tag" onclick="setQ('UF')">🗺️ UF</span>
+        <span class="quick-tag" onclick="setQ('SEXO')">⚤ SEXO</span>
+        <span class="quick-tag" onclick="setQ('RENDA')">💰 RENDA</span>
+        <span class="quick-tag" onclick="setQ('IBGE')">🏛️ IBGE</span>
+      </div>
+      <p class="hint">
+        <b>Busca livre:</b> qualquer texto encontrado no JSON · <b>Busca por campo:</b> use <code>CAMPO:valor</code><br>
+        Ex: <code>NOME:Marcelia</code> · <code>UF:SP</code> · <code>NASC:01/01/1977</code>
+      </p>
+      <div class="error-msg" id="error-json"></div>
+    </div>
+  </div>
+
+  <div id="results-area"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeModalBg(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal-backdrop').classList.remove('open')">✕</button>
+    <div class="modal-title" id="modal-title"></div>
+    <div cla
